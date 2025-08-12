@@ -168,7 +168,7 @@ const Index = () => {
         description: "Total cost of delivery staff wages",
       },
       {
-        label: "Net Profit",
+        label: "Total Profit",
         value: `$${Math.round(totals.profit).toLocaleString()}`,
         sub: `Energy Cost: $${Math.round(totals.energyCost)}`,
         description: "Revenue minus wages and energy costs",
@@ -275,17 +275,6 @@ const Index = () => {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Management Console</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  View Reports
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Settings className="mr-2 h-4 w-4" />
-                  Simulation Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
                 <DropdownMenuItem
                   onClick={handleLogout}
                   className="text-red-600"
@@ -312,44 +301,44 @@ const Index = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-2">
-            <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+        <div className="mb-8">
+          <Dialog open={openSimModal} onOpenChange={setOpenSimModal}>
+            <DialogTrigger asChild>
+              <Button variant="default" size="lg" className="w-full mb-4">
+                Run Simulation
+              </Button>
+            </DialogTrigger>
+            <DialogContent
+              className="max-h-[90vh] max-w-2xl w-full overflow-y-auto scrollbar-hide"
+              style={{ scrollbarWidth: "none" }}
+            >
+              <DialogHeader>
+                <DialogTitle>Simulation Controls</DialogTitle>
+              </DialogHeader>
+              <SimulationControls
+                value={config}
+                onChange={setConfig}
+                onRun={onRun}
+                onReset={onReset}
+              />
+              <DialogClose asChild>
+                <Button variant="outline" className="mt-4 w-full">
+                  Cancel
+                </Button>
+              </DialogClose>
+            </DialogContent>
+          </Dialog>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 items-stretch">
+          <div className="md:col-span-2 h-full">
+            <div className="bg-white rounded-xl shadow-lg p-6 h-full flex flex-col">
               <h3 className="text-lg font-bold mb-4 text-green-700">
                 Key Performance Indicators
               </h3>
               <KPIGrid kpis={kpis} />
             </div>
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <Dialog open={openSimModal} onOpenChange={setOpenSimModal}>
-                <DialogTrigger asChild>
-                  <Button variant="default" size="lg" className="w-full mb-4">
-                    Adjust Simulation
-                  </Button>
-                </DialogTrigger>
-                <DialogContent
-                  className="max-h-[90vh] max-w-2xl w-full overflow-y-auto scrollbar-hide"
-                  style={{ scrollbarWidth: "none" }}
-                >
-                  <DialogHeader>
-                    <DialogTitle>Simulation Controls</DialogTitle>
-                  </DialogHeader>
-                  <SimulationControls
-                    value={config}
-                    onChange={setConfig}
-                    onRun={onRun}
-                    onReset={onReset}
-                  />
-                  <DialogClose asChild>
-                    <Button variant="outline" className="mt-4 w-full">
-                      Cancel
-                    </Button>
-                  </DialogClose>
-                </DialogContent>
-              </Dialog>
-            </div>
           </div>
-          <div className="md:col-span-2">
+          <div className="md:col-span-2 h-full">
             <div className="bg-white rounded-xl shadow-lg p-6 h-full flex flex-col">
               <h3 className="text-lg font-bold mb-4 text-green-700">
                 Performance Charts
