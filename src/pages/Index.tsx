@@ -45,6 +45,15 @@ const Index = () => {
     [key: string]: SimConfig;
   }>({});
 
+  const [simulationHistory, setSimulationHistory] = useState<
+    Array<{
+      timestamp: string;
+      config: SimConfig;
+      kpis: typeof kpis;
+      totals: typeof totals;
+    }>
+  >([]);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
@@ -165,8 +174,17 @@ const Index = () => {
   const onRun = useCallback(() => {
     setSimConfig(config);
     setOpenSimModal(false);
+    setSimulationHistory((prev) => [
+      ...prev,
+      {
+        timestamp: new Date().toLocaleString(),
+        config,
+        kpis,
+        totals,
+      },
+    ]);
     // Removed scenario save logic
-  }, [config]);
+  }, [config, kpis, totals]);
 
   const onReset = useCallback(() => {
     if (window.confirm("Reset to default configuration?")) {
@@ -311,6 +329,55 @@ const Index = () => {
           </div>
         </div>
       </main>
+      <div className="container pb-10">
+        <h2 className="text-xl font-semibold text-green-800 mb-4">Simulation History</h2>
+        {simulationHistory.length === 0 ? (
+          <p className="text-muted-foreground">No simulations run yet.</p>
+        ) : (
+          <div className="space-y-8">
+            {simulationHistory.map((entry, idx) => (
+              <div key={idx} className="bg-white rounded-xl shadow p-6 border border-green-100">
+                <div className="flex justify-between items-center mb-4">
+                  <span className="font-bold text-green-700 text-lg">Run #{idx + 1}</span>
+                  <span className="text-xs text-muted-foreground">{entry.timestamp}</span>
+                </div>
+                <div className="mb-4">
+                  <span className="font-semibold text-green-800 block mb-2">Configuration</span>
+                  <table className="w-full text-sm border border-gray-200 rounded overflow-hidden mb-2">
+                    <tbody>
+                      {Object.entries(entry.config).map(([key, value]) => (
+                        <tr key={key} className="border-b last:border-b-0">
+                          <td className="py-1 px-2 font-medium text-green-900 bg-green-50 w-1/3">{key}</td>
+                          <td className="py-1 px-2">{String(value)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <span className="font-semibold text-green-800 block mb-2">KPIs</span>
+                  <table className="w-full text-sm border border-gray-200 rounded overflow-hidden">
+                    <tbody>
+                      {entry.kpis.map((kpi: any, kpiIdx: number) => (
+                        <tr key={kpiIdx} className="border-b last:border-b-0">
+                          <td className="py-1 px-2 font-medium text-green-900 bg-green-50 w-1/3">{kpi.label}</td>
+                          <td className="py-1 px-2">{kpi.value}</td>
+                          <td className="py-1 px-2 text-muted-foreground">
+                            {kpi.description}
+                            {kpi.sub && (
+                              <span className="ml-2 text-xs text-green-700">({kpi.sub})</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
