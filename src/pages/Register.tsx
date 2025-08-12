@@ -42,6 +42,9 @@ const Register: React.FC = () => {
       });
       const data = await res.json();
       if (res.ok) {
+        if (data.token) {
+          localStorage.setItem("token", data.token);
+        }
         toast.success("Registration successful! Redirecting to home...");
         setTimeout(() => {
           navigate("/");
