@@ -50,22 +50,7 @@ const Index = () => {
     navigate("/login");
   };
 
-  const handleSaveScenario = () => {
-    const name = prompt("Enter a name for this scenario:");
-    if (name) {
-      const scenarios = { ...savedScenarios, [name]: config };
-      setSavedScenarios(scenarios);
-      localStorage.setItem("scenarios", JSON.stringify(scenarios));
-    }
-  };
-
-  const handleLoadScenario = () => {
-    const scenarios = JSON.parse(localStorage.getItem("scenarios") || "{}");
-    const name = Object.keys(scenarios)[0];
-    if (name) {
-      setConfig(scenarios[name]);
-    }
-  };
+  // Removed scenario save/load logic and UI
 
   // Generate report content
   const getReportContent = () => {
@@ -180,15 +165,7 @@ const Index = () => {
   const onRun = useCallback(() => {
     setSimConfig(config);
     setOpenSimModal(false);
-    // Save current scenario state
-    const scenarios = JSON.parse(localStorage.getItem("scenarios") || "{}");
-    localStorage.setItem(
-      "scenarios",
-      JSON.stringify({
-        ...scenarios,
-        "Last Run": config,
-      })
-    );
+    // Removed scenario save logic
   }, [config]);
 
   const onReset = useCallback(() => {
@@ -213,16 +190,9 @@ const Index = () => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleSaveScenario}
-                    className="bg-white shadow hover:bg-green-50"
-                  >
-                    <Save className="h-5 w-5" />
-                  </Button>
+                  {/* Removed Save Scenario button */}
                 </TooltipTrigger>
-                <TooltipContent>Save current scenario</TooltipContent>
+                {/* Removed Save current scenario UI */}
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -252,16 +222,9 @@ const Index = () => {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={handleLoadScenario}
-                    className="bg-white shadow hover:bg-green-50"
-                  >
-                    <Download className="h-5 w-5" />
-                  </Button>
+                  {/* Removed Load Scenario button */}
                 </TooltipTrigger>
-                <TooltipContent>Load saved scenario</TooltipContent>
+                {/* Removed Load saved scenario UI */}
               </Tooltip>
             </TooltipProvider>
             <DropdownMenu>

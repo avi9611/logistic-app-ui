@@ -20,6 +20,7 @@ const Simulation: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [chartData, setChartData] = useState<any[]>([]);
+  // Removed scenario save/load logic and UI
 
   const runSimulation = async () => {
     setLoading(true);
