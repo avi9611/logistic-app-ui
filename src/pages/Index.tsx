@@ -3,8 +3,20 @@ import { useNavigate } from "react-router-dom";
 import KPIGrid from "@/components/greencart/KPIGrid";
 import SimulationControls from "@/components/greencart/SimulationControls";
 import ChartsPanel from "@/components/greencart/ChartsPanel";
-import { defaultSimConfig, SimConfig, useDeliverySimulation } from "@/hooks/useDeliverySimulation";
+import {
+  defaultSimConfig,
+  SimConfig,
+  useDeliverySimulation,
+} from "@/hooks/useDeliverySimulation";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogClose
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { User, LogOut, Settings, Save, Download } from "lucide-react";
 import {
+  
   Tooltip,
   TooltipContent,
   TooltipProvider,
@@ -23,10 +36,13 @@ import {
 
 const Index = () => {
   const navigate = useNavigate();
+  const [openSimModal, setOpenSimModal] = useState(false);
   const [config, setConfig] = useState<SimConfig>(defaultSimConfig);
   const [simConfig, setSimConfig] = useState<SimConfig>(defaultSimConfig);
   const { points, totals } = useDeliverySimulation(simConfig);
-  const [savedScenarios, setSavedScenarios] = useState<{[key: string]: SimConfig}>({});
+  const [savedScenarios, setSavedScenarios] = useState<{
+    [key: string]: SimConfig;
+  }>({});
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -38,64 +54,77 @@ const Index = () => {
     if (name) {
       const scenarios = { ...savedScenarios, [name]: config };
       setSavedScenarios(scenarios);
-      localStorage.setItem('scenarios', JSON.stringify(scenarios));
+      localStorage.setItem("scenarios", JSON.stringify(scenarios));
     }
   };
 
   const handleLoadScenario = () => {
-    const scenarios = JSON.parse(localStorage.getItem('scenarios') || '{}');
+    const scenarios = JSON.parse(localStorage.getItem("scenarios") || "{}");
     const name = Object.keys(scenarios)[0];
     if (name) {
       setConfig(scenarios[name]);
     }
   };
 
-  const kpis = useMemo(() => [
-    {
-      label: "Deliveries",
-      value: totals.deliveries.toLocaleString(),
-      description: "Total number of completed deliveries"
-    },
-    {
-      label: "Efficiency Score",
-      value: config.drivers && config.shiftHours ? (totals.deliveries / (config.drivers * config.shiftHours)).toFixed(2) : "N/A",
-      description: "Deliveries per driver per hour"
-    },
-    {
-      label: "On-time Rate",
-      value: `${Math.round(totals.onTimeRate * 100)}%`,
-      description: "Percentage of deliveries completed within target time"
-    },
-    {
-      label: "Revenue",
-      value: `$${Math.round(totals.revenue).toLocaleString()}`,
-      description: "Total earnings from completed deliveries"
-    },
-    {
-      label: "Wages",
-      value: `$${Math.round(totals.wages).toLocaleString()}`,
-      description: "Total cost of delivery staff wages"
-    },
-    {
-      label: "Net Profit",
-      value: `$${Math.round(totals.profit).toLocaleString()}`,
-      sub: `Energy Cost: $${Math.round(totals.energyCost)}`,
-      description: "Revenue minus wages and energy costs"
-    },
-  ], [totals]);
+  const kpis = useMemo(
+    () => [
+      {
+        label: "Deliveries",
+        value: totals.deliveries.toLocaleString(),
+        description: "Total number of completed deliveries",
+      },
+      {
+        label: "Efficiency Score",
+        value:
+          config.drivers && config.shiftHours
+            ? (
+                totals.deliveries /
+                (config.drivers * config.shiftHours)
+              ).toFixed(2)
+            : "N/A",
+        description: "Deliveries per driver per hour",
+      },
+      {
+        label: "On-time Rate",
+        value: `${Math.round(totals.onTimeRate * 100)}%`,
+        description: "Percentage of deliveries completed within target time",
+      },
+      {
+        label: "Revenue",
+        value: `$${Math.round(totals.revenue).toLocaleString()}`,
+        description: "Total earnings from completed deliveries",
+      },
+      {
+        label: "Wages",
+        value: `$${Math.round(totals.wages).toLocaleString()}`,
+        description: "Total cost of delivery staff wages",
+      },
+      {
+        label: "Net Profit",
+        value: `$${Math.round(totals.profit).toLocaleString()}`,
+        sub: `Energy Cost: $${Math.round(totals.energyCost)}`,
+        description: "Revenue minus wages and energy costs",
+      },
+    ],
+    [totals]
+  );
 
   const onRun = useCallback(() => {
     setSimConfig(config);
+    setOpenSimModal(false);
     // Save current scenario state
-    const scenarios = JSON.parse(localStorage.getItem('scenarios') || '{}');
-    localStorage.setItem('scenarios', JSON.stringify({
-      ...scenarios,
-      'Last Run': config
-    }));
+    const scenarios = JSON.parse(localStorage.getItem("scenarios") || "{}");
+    localStorage.setItem(
+      "scenarios",
+      JSON.stringify({
+        ...scenarios,
+        "Last Run": config,
+      })
+    );
   }, [config]);
 
   const onReset = useCallback(() => {
-    if (window.confirm('Reset to default configuration?')) {
+    if (window.confirm("Reset to default configuration?")) {
       setConfig(defaultSimConfig);
     }
   }, []);
@@ -116,7 +145,11 @@ const Index = () => {
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" size="icon" onClick={handleSaveScenario}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleSaveScenario}
+                >
                   <Save className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
@@ -125,7 +158,11 @@ const Index = () => {
 
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="outline" size="icon" onClick={handleLoadScenario}>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleLoadScenario}
+                >
                   <Download className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
@@ -135,7 +172,11 @@ const Index = () => {
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon" className="h-10 w-10 rounded-full">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-10 w-10 rounded-full"
+              >
                 <User className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
@@ -164,9 +205,10 @@ const Index = () => {
         <div className="prose max-w-none">
           <h2>Delivery Operations Simulator</h2>
           <p>
-            Use this tool to experiment with different operational parameters and see their impact
-            on key performance indicators. Adjust staffing levels, delivery schedules, and route
-            allocations to optimize for both profitability and environmental impact.
+            Use this tool to experiment with different operational parameters
+            and see their impact on key performance indicators. Adjust staffing
+            levels, delivery schedules, and route allocations to optimize for
+            both profitability and environmental impact.
           </p>
         </div>
 
@@ -174,12 +216,27 @@ const Index = () => {
 
         <section className="grid lg:grid-cols-3 gap-6 items-start">
           <div className="lg:col-span-1 sticky top-4">
-            <SimulationControls 
-              value={config} 
-              onChange={setConfig} 
-              onRun={onRun} 
-              onReset={onReset}
-            />
+            <Dialog open={openSimModal} onOpenChange={setOpenSimModal}>
+              <DialogTrigger asChild>
+                <Button variant="default" size="lg" className="w-full mb-4">
+                  Adjust Simulation
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-h-[90vh] max-w-2xl w-full overflow-y-auto scrollbar-hide" style={{ scrollbarWidth: "none" }}>
+                <DialogHeader>
+                  <DialogTitle>Simulation Controls</DialogTitle>
+                </DialogHeader>
+                <SimulationControls
+                  value={config}
+                  onChange={setConfig}
+                  onRun={onRun}
+                  onReset={onReset}
+                />
+                <DialogClose asChild>
+                  <Button variant="outline" className="mt-4 w-full">Cancel</Button>
+                </DialogClose>
+              </DialogContent>
+            </Dialog>
           </div>
           <div className="lg:col-span-2 space-y-6">
             <ChartsPanel data={points} />
