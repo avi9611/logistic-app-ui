@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Toaster, toast } from "react-hot-toast";
 
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
@@ -27,6 +28,7 @@ const Login: React.FC = () => {
       if (res.ok) {
         localStorage.setItem("token", data.token);
         setMessage("Login successful! Redirecting...");
+        toast.success("Login successful!");
         setTimeout(() => {
           navigate("/");
         }, 1000);
@@ -41,14 +43,16 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-green-50 to-blue-50 px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md"
-      >
-        <Card className="w-full p-8 space-y-6 shadow-xl rounded-2xl border-0 bg-white backdrop-blur-sm">
+    <>
+      <Toaster position="top-center" />
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-green-50 to-blue-50 px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full max-w-md"
+        >
+          <Card className="w-full p-8 space-y-6 shadow-xl rounded-2xl border-0 bg-white backdrop-blur-sm">
           <div className="space-y-2 text-center">
             <motion.div
               initial={{ scale: 0.9 }}
@@ -217,6 +221,7 @@ const Login: React.FC = () => {
         </Card>
       </motion.div>
     </div>
+    </>
   );
 };
 
