@@ -24,7 +24,8 @@ import {
 const Index = () => {
   const navigate = useNavigate();
   const [config, setConfig] = useState<SimConfig>(defaultSimConfig);
-  const { points, totals } = useDeliverySimulation(config);
+  const [simConfig, setSimConfig] = useState<SimConfig>(defaultSimConfig);
+  const { points, totals } = useDeliverySimulation(simConfig);
   const [savedScenarios, setSavedScenarios] = useState<{[key: string]: SimConfig}>({});
 
   const handleLogout = () => {
@@ -84,6 +85,7 @@ const Index = () => {
   ], [totals]);
 
   const onRun = useCallback(() => {
+    setSimConfig(config);
     // Save current scenario state
     const scenarios = JSON.parse(localStorage.getItem('scenarios') || '{}');
     localStorage.setItem('scenarios', JSON.stringify({
