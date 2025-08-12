@@ -41,21 +41,21 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-purple-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-100 via-green-50 to-blue-50 px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="w-full max-w-md"
       >
-        <Card className="w-full p-8 space-y-6 shadow-xl rounded-2xl border-0 bg-white/90 backdrop-blur-sm">
+        <Card className="w-full p-8 space-y-6 shadow-xl rounded-2xl border-0 bg-white backdrop-blur-sm">
           <div className="space-y-2 text-center">
             <motion.div
               initial={{ scale: 0.9 }}
               animate={{ scale: 1 }}
               transition={{ type: "spring", stiffness: 200 }}
             >
-              <div className="mx-auto h-14 w-14 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center mb-4">
+              <div className="mx-auto h-14 w-14 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center mb-4">
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="24"
@@ -131,7 +131,7 @@ const Login: React.FC = () => {
             <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
               <Button
                 type="submit"
-                className="w-full py-3 px-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-medium rounded-lg shadow-md transition-all duration-300"
+                className="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700 text-white font-medium rounded-lg shadow-md transition-all duration-300"
                 disabled={isLoading}
               >
                 {isLoading ? (
