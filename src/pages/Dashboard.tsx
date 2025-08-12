@@ -33,14 +33,13 @@ const Dashboard: React.FC = () => {
           setError(data.error);
         } else {
           setKpi(data);
-          // Example chart data for demonstration
           setChartData([
             {
               timestamp: "08:00",
               deliveries: data.totalDeliveries,
               onTimeRate: data.efficiencyScore / 100,
               revenue: data.totalProfit,
-              energyCost: 0, // Placeholder
+              energyCost: 0, 
             },
           ]);
         }

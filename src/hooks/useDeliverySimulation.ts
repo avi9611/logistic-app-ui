@@ -15,7 +15,7 @@ export const defaultSimConfig: SimConfig = {
   maxDeliveriesPerRoute: 12,
   deliveryTimeWindow: 60,
   evRatio: 50,
-  routeOptimization: 2, // 1: Time, 2: Balanced, 3: Eco
+  routeOptimization: 2,
 };
 
 interface SimulationPoint {
@@ -38,10 +38,10 @@ interface SimulationTotals {
 
 const HOURLY_WAGE = 25;
 const DELIVERY_FEE = 15;
-const EV_ENERGY_COST = 0.05; // per km
-const GAS_ENERGY_COST = 0.15; // per km
-const AVG_ROUTE_LENGTH = 50; // km
-const CO2_PER_GAS_KM = 0.2; // kg
+const EV_ENERGY_COST = 0.05; 
+const GAS_ENERGY_COST = 0.15; 
+const AVG_ROUTE_LENGTH = 50; 
+const CO2_PER_GAS_KM = 0.2; 
 
 export function useDeliverySimulation(config: SimConfig) {
   const [points, setPoints] = useState<SimulationPoint[]>([]);
@@ -57,7 +57,7 @@ export function useDeliverySimulation(config: SimConfig) {
 
   useEffect(() => {
     // Simulate delivery operations
-    const timeWindow = 12; // hours to simulate
+    const timeWindow = 12; 
     const newPoints: SimulationPoint[] = [];
     let totalDeliveries = 0;
     let totalOnTime = 0;

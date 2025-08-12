@@ -20,7 +20,6 @@ const Simulation: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [chartData, setChartData] = useState<any[]>([]);
-  // Removed scenario save/load logic and UI
 
   const runSimulation = async () => {
     setLoading(true);
@@ -41,7 +40,7 @@ const Simulation: React.FC = () => {
             deliveries: data.totalDeliveries,
             onTimeRate: data.efficiencyScore / 100,
             revenue: data.totalProfit,
-            energyCost: 0, // Placeholder
+            energyCost: 0, 
           },
         ]);
       } else {

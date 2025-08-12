@@ -85,8 +85,6 @@ const Index = () => {
     navigate("/login");
   };
 
-  // Removed scenario save/load logic and UI
-
   // Generate report content
   const getReportContent = () => {
     let report = "GreenCart Logistics - Scenario Report\n\n";
@@ -249,9 +247,7 @@ const Index = () => {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  {/* Removed Save Scenario button */}
                 </TooltipTrigger>
-                {/* Removed Save current scenario UI */}
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -281,9 +277,7 @@ const Index = () => {
               </Tooltip>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  {/* Removed Load Scenario button */}
                 </TooltipTrigger>
-                {/* Removed Load saved scenario UI */}
               </Tooltip>
             </TooltipProvider>
             <DropdownMenu>
