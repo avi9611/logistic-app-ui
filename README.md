@@ -53,7 +53,7 @@ Eco Delivery Simulator is a full-stack web application for simulating and optimi
    ```
 4. Start the backend server:
    ```bash
-   npm run dev
+   node server/authServer.js
    ```
    The API will run on `http://localhost:4000`.
 
