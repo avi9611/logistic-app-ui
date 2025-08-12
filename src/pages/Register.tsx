@@ -40,10 +40,10 @@ const Register: React.FC = () => {
       });
       const data = await res.json();
       if (res.ok) {
-        setMessage("Registration successful! Redirecting to login...");
+        setMessage("Registration successful! Redirecting to home...");
         // Add a small delay to show the success message before redirecting
         setTimeout(() => {
-          navigate("/login");
+          navigate("/");
         }, 1500);
       } else {
         setMessage(data.message || "Registration failed");
