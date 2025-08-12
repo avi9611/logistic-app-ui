@@ -1,67 +1,188 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
-import { TimePoint } from "@/hooks/useDeliverySimulation";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Label,
+} from "recharts";
 
-const COLORS = ["hsl(var(--primary))", "hsl(var(--muted-foreground))"];
+interface SimulationPoint {
+  timestamp: string;
+  deliveries: number;
+  onTimeRate: number;
+  revenue: number;
+  energyCost: number;
+}
 
-export default function ChartsPanel({ data }: { data: TimePoint[] }) {
-  const pieData = [
-    { name: "EV km", value: data.reduce((s, p) => s + p.km * (p.evDeliveries / Math.max(1, p.deliveries || 1)), 0) },
-    { name: "ICE km", value: data.reduce((s, p) => s + p.km * (1 - p.evDeliveries / Math.max(1, p.deliveries || 1)), 0) },
-  ];
+interface ChartsPanelProps {
+  data: SimulationPoint[];
+}
+
+const formatTime = (timestamp: string) => {
+  return new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+};
+
+const formatCurrency = (value: number) => {
+  return `$${value.toLocaleString()}`;
+};
+
+const formatPercentage = (value: number) => {
+  return `${(value * 100).toFixed(1)}%`;
+};
+
+const ChartsPanel = ({ data }: ChartsPanelProps) => {
+  const chartHeight = 300;
 
   return (
-    <section className="grid lg:grid-cols-2 gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Deliveries vs Capacity</CardTitle>
-        </CardHeader>
-        <CardContent className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
-              <XAxis dataKey="hour" tickMargin={8} />
-              <YAxis allowDecimals={false} tickMargin={8} />
-              <Tooltip cursor={{ stroke: "hsl(var(--border))" }} />
-              <Line type="monotone" dataKey="deliveries" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} name="Deliveries" />
-              <Line type="monotone" dataKey="capacity" stroke="hsl(var(--muted-foreground))" strokeWidth={2} dot={false} name="Capacity" />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+    <Card className="p-6">
+      <h3 className="text-lg font-semibold mb-4">Performance Metrics</h3>
+      
+      <Tabs defaultValue="deliveries" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="deliveries">Deliveries</TabsTrigger>
+          <TabsTrigger value="ontime">On-time Rate</TabsTrigger>
+          <TabsTrigger value="financial">Financial</TabsTrigger>
+        </TabsList>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Utilization by Hour</CardTitle>
-        </CardHeader>
-        <CardContent className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} margin={{ left: 8, right: 8, top: 8, bottom: 8 }}>
-              <XAxis dataKey="hour" tickMargin={8} />
-              <YAxis domain={[0, 1]} tickFormatter={(v) => `${Math.round(v * 100)}%`} tickMargin={8} />
-              <Tooltip formatter={(v: any) => `${Math.round((v as number) * 100)}%`} />
-              <Bar dataKey="utilization" fill="hsl(var(--primary))" radius={4} />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+        <TabsContent value="deliveries" className="mt-4">
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Number of deliveries completed per hour
+            </p>
+            <div style={{ height: chartHeight }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="timestamp" 
+                    tickFormatter={formatTime}
+                    interval="preserveStartEnd"
+                  >
+                    <Label value="Time of Day" offset={-5} position="insideBottom" />
+                  </XAxis>
+                  <YAxis>
+                    <Label value="Deliveries" angle={-90} position="insideLeft" />
+                  </YAxis>
+                  <Tooltip 
+                    formatter={(value: number) => [value, "Deliveries"]}
+                    labelFormatter={formatTime}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="deliveries"
+                    stroke="#2563eb"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </TabsContent>
 
-      <Card className="lg:col-span-2">
-        <CardHeader>
-          <CardTitle>Fleet Energy Mix (km)</CardTitle>
-        </CardHeader>
-        <CardContent className="h-72">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={pieData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={90} paddingAngle={4}>
-                {pieData.map((_, i) => (
-                  <Cell key={`c-${i}`} fill={COLORS[i % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-    </section>
+        <TabsContent value="ontime" className="mt-4">
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Percentage of deliveries completed within target time window
+            </p>
+            <div style={{ height: chartHeight }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="timestamp" 
+                    tickFormatter={formatTime}
+                    interval="preserveStartEnd"
+                  >
+                    <Label value="Time of Day" offset={-5} position="insideBottom" />
+                  </XAxis>
+                  <YAxis 
+                    tickFormatter={formatPercentage}
+                    domain={[0.6, 1]}
+                  >
+                    <Label value="On-time Rate" angle={-90} position="insideLeft" />
+                  </YAxis>
+                  <Tooltip 
+                    formatter={(value: number) => [formatPercentage(value), "On-time Rate"]}
+                    labelFormatter={formatTime}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="onTimeRate"
+                    stroke="#16a34a"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="financial" className="mt-4">
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              Revenue and energy costs per hour
+            </p>
+            <div style={{ height: chartHeight }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={data}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="timestamp" 
+                    tickFormatter={formatTime}
+                    interval="preserveStartEnd"
+                  >
+                    <Label value="Time of Day" offset={-5} position="insideBottom" />
+                  </XAxis>
+                  <YAxis
+                    tickFormatter={formatCurrency}
+                  >
+                    <Label value="Amount ($)" angle={-90} position="insideLeft" />
+                  </YAxis>
+                  <Tooltip 
+                    formatter={(value: number) => [formatCurrency(value), "Amount"]}
+                    labelFormatter={formatTime}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="revenue"
+                    name="Revenue"
+                    stroke="#16a34a"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="energyCost"
+                    name="Energy Cost"
+                    stroke="#dc2626"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex gap-4 justify-center mt-2">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-600 rounded" />
+                <span className="text-sm">Revenue</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-red-600 rounded" />
+                <span className="text-sm">Energy Cost</span>
+              </div>
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+    </Card>
   );
-}
+};
+
+export default ChartsPanel;
