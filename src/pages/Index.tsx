@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import KPIGrid from "@/components/greencart/KPIGrid";
 import SimulationControls from "@/components/greencart/SimulationControls";
@@ -54,6 +54,32 @@ const Index = () => {
     }>
   >([]);
 
+  // Decode userId from JWT token
+  function getUserIdFromToken() {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      return payload.userId;
+    } catch {
+      return null;
+    }
+  }
+  const userId = getUserIdFromToken();
+
+  // Fetch simulation history from backend
+  // Helper to get correct API base URL (strip trailing /api)
+  const API_BASE = import.meta.env.VITE_API_URL.replace(/\/api$/, "");
+
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`${API_BASE}/simulation-history?userId=${userId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setSimulationHistory(data);
+      });
+  }, [userId]);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/login");
@@ -97,9 +123,7 @@ const Index = () => {
             ...Object.entries(config).map(
               ([key, value]) =>
                 new Paragraph({
-                  children: [
-                    new TextRun(`${key}: ${JSON.stringify(value)}`),
-                  ],
+                  children: [new TextRun(`${key}: ${JSON.stringify(value)}`)],
                 })
             ),
             new Paragraph({ children: [new TextRun("")] }),
@@ -174,17 +198,34 @@ const Index = () => {
   const onRun = useCallback(() => {
     setSimConfig(config);
     setOpenSimModal(false);
-    setSimulationHistory((prev) => [
-      ...prev,
-      {
-        timestamp: new Date().toLocaleString(),
-        config,
-        kpis,
-        totals,
-      },
-    ]);
+    const entry = {
+      timestamp: new Date().toLocaleString(),
+      config,
+      kpis,
+      totals,
+    };
+    if (userId) {
+      fetch(`${API_BASE}/simulation-history`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...entry, userId }),
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Failed to save simulation history");
+          return res.json();
+        })
+        .then(saved => {
+          setSimulationHistory(prev => [saved, ...prev]);
+        })
+        .catch(err => {
+          // Optionally show error to user
+          console.error("Simulation history save error:", err);
+        });
+    } else {
+      setSimulationHistory(prev => [entry, ...prev]);
+    }
     // Removed scenario save logic
-  }, [config, kpis, totals]);
+  }, [config, kpis, totals, userId]);
 
   const onReset = useCallback(() => {
     if (window.confirm("Reset to default configuration?")) {
@@ -330,24 +371,37 @@ const Index = () => {
         </div>
       </main>
       <div className="container pb-10">
-        <h2 className="text-xl font-semibold text-green-800 mb-4">Simulation History</h2>
+        <h2 className="text-xl font-semibold text-green-800 mb-4">
+          Simulation History
+        </h2>
         {simulationHistory.length === 0 ? (
           <p className="text-muted-foreground">No simulations run yet.</p>
         ) : (
           <div className="space-y-8">
             {simulationHistory.map((entry, idx) => (
-              <div key={idx} className="bg-white rounded-xl shadow p-6 border border-green-100">
+              <div
+                key={idx}
+                className="bg-white rounded-xl shadow p-6 border border-green-100"
+              >
                 <div className="flex justify-between items-center mb-4">
-                  <span className="font-bold text-green-700 text-lg">Run #{idx + 1}</span>
-                  <span className="text-xs text-muted-foreground">{entry.timestamp}</span>
+                  <span className="font-bold text-green-700 text-lg">
+                    Run #{idx + 1}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {entry.timestamp}
+                  </span>
                 </div>
                 <div className="mb-4">
-                  <span className="font-semibold text-green-800 block mb-2">Configuration</span>
+                  <span className="font-semibold text-green-800 block mb-2">
+                    Configuration
+                  </span>
                   <table className="w-full text-sm border border-gray-200 rounded overflow-hidden mb-2">
                     <tbody>
                       {Object.entries(entry.config).map(([key, value]) => (
                         <tr key={key} className="border-b last:border-b-0">
-                          <td className="py-1 px-2 font-medium text-green-900 bg-green-50 w-1/3">{key}</td>
+                          <td className="py-1 px-2 font-medium text-green-900 bg-green-50 w-1/3">
+                            {key}
+                          </td>
                           <td className="py-1 px-2">{String(value)}</td>
                         </tr>
                       ))}
@@ -355,17 +409,23 @@ const Index = () => {
                   </table>
                 </div>
                 <div>
-                  <span className="font-semibold text-green-800 block mb-2">KPIs</span>
+                  <span className="font-semibold text-green-800 block mb-2">
+                    KPIs
+                  </span>
                   <table className="w-full text-sm border border-gray-200 rounded overflow-hidden">
                     <tbody>
                       {entry.kpis.map((kpi: any, kpiIdx: number) => (
                         <tr key={kpiIdx} className="border-b last:border-b-0">
-                          <td className="py-1 px-2 font-medium text-green-900 bg-green-50 w-1/3">{kpi.label}</td>
+                          <td className="py-1 px-2 font-medium text-green-900 bg-green-50 w-1/3">
+                            {kpi.label}
+                          </td>
                           <td className="py-1 px-2">{kpi.value}</td>
                           <td className="py-1 px-2 text-muted-foreground">
                             {kpi.description}
                             {kpi.sub && (
-                              <span className="ml-2 text-xs text-green-700">({kpi.sub})</span>
+                              <span className="ml-2 text-xs text-green-700">
+                                ({kpi.sub})
+                              </span>
                             )}
                           </td>
                         </tr>
