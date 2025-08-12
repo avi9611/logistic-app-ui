@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,31 +6,71 @@ import { Input } from "@/components/ui/input";
 interface Driver {
   id: number;
   name: string;
-  status: string;
+  shiftHours?: number;
+  workHours7d?: number[];
 }
 
-const initialDrivers: Driver[] = [
-  { id: 1, name: "John Doe", status: "Active" },
-  { id: 2, name: "Jane Smith", status: "Inactive" },
-];
-
 const Drivers: React.FC = () => {
-  const [drivers, setDrivers] = useState<Driver[]>(initialDrivers);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [newName, setNewName] = useState("");
-  const [newStatus, setNewStatus] = useState("Active");
+  const [newShiftHours, setNewShiftHours] = useState(6);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const addDriver = () => {
+  // Fetch drivers from backend
+  useEffect(() => {
+    setLoading(true);
+    fetch("/drivers")
+      .then(res => res.json())
+      .then(data => {
+        setDrivers(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError("Failed to load drivers");
+        setLoading(false);
+      });
+  }, []);
+
+  const addDriver = async () => {
     if (!newName) return;
-    setDrivers([
-      ...drivers,
-      { id: Date.now(), name: newName, status: newStatus }
-    ]);
-    setNewName("");
-    setNewStatus("Active");
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/drivers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newName, shiftHours: newShiftHours, workHours7d: [6,8,7,7,7,6,10] }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setDrivers([...drivers, data]);
+        setNewName("");
+        setNewShiftHours(6);
+      } else {
+        setError(data.error || "Failed to add driver");
+      }
+    } catch {
+      setError("Failed to add driver");
+    }
+    setLoading(false);
   };
 
-  const removeDriver = (id: number) => {
-    setDrivers(drivers.filter(d => d.id !== id));
+  const removeDriver = async (id: number) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(`/drivers/${id}`, { method: "DELETE" });
+      const data = await res.json();
+      if (res.ok) {
+        setDrivers(drivers.filter(d => d.id !== id));
+      } else {
+        setError(data.error || "Failed to delete driver");
+      }
+    } catch {
+      setError("Failed to delete driver");
+    }
+    setLoading(false);
   };
 
   return (
@@ -42,21 +82,20 @@ const Drivers: React.FC = () => {
           value={newName}
           onChange={e => setNewName(e.target.value)}
         />
-        <select
-          value={newStatus}
-          onChange={e => setNewStatus(e.target.value)}
-          className="border rounded px-2 py-1"
-        >
-          <option value="Active">Active</option>
-          <option value="Inactive">Inactive</option>
-        </select>
-        <Button onClick={addDriver}>Add</Button>
+        <Input
+          type="number"
+          placeholder="Shift Hours"
+          value={newShiftHours}
+          onChange={e => setNewShiftHours(Number(e.target.value))}
+        />
+        <Button onClick={addDriver} disabled={loading}>Add</Button>
       </div>
+      {error && <div className="text-red-500 mb-2">{error}</div>}
       <table className="w-full border rounded">
         <thead>
           <tr>
             <th className="text-left p-2">Name</th>
-            <th className="text-left p-2">Status</th>
+            <th className="text-left p-2">Shift Hours</th>
             <th className="text-left p-2">Actions</th>
           </tr>
         </thead>
@@ -64,14 +103,15 @@ const Drivers: React.FC = () => {
           {drivers.map(driver => (
             <tr key={driver.id}>
               <td className="p-2">{driver.name}</td>
-              <td className="p-2">{driver.status}</td>
+              <td className="p-2">{driver.shiftHours}</td>
               <td className="p-2">
-                <Button variant="outline" onClick={() => removeDriver(driver.id)}>Delete</Button>
+                <Button variant="outline" onClick={() => removeDriver(driver.id)} disabled={loading}>Delete</Button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      {loading && <div className="mt-2 text-gray-500">Loading...</div>}
     </Card>
   );
 };

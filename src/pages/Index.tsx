@@ -81,11 +81,6 @@ const Index = () => {
       sub: `Energy Cost: $${Math.round(totals.energyCost)}`,
       description: "Revenue minus wages and energy costs"
     },
-    {
-      label: "CO₂ Saved",
-      value: `${Math.round(totals.co2SavedKg).toLocaleString()} kg`,
-      description: "Estimated CO₂ emissions saved vs traditional delivery"
-    },
   ], [totals]);
 
   const onRun = useCallback(() => {

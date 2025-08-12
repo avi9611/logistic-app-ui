@@ -27,8 +27,6 @@ const KPIGrid = ({ kpis }: KPIGridProps) => {
         return rate >= 90 ? "text-green-600" : rate >= 75 ? "text-yellow-600" : "text-red-600";
       case "Net Profit":
         return value.includes("-") ? "text-red-600" : "text-green-600";
-      case "CO₂ Saved":
-        return "text-green-600";
       default:
         return "text-gray-900";
     }
@@ -74,12 +72,6 @@ const KPIGrid = ({ kpis }: KPIGridProps) => {
                 <div className="mt-2 text-xs text-gray-500">
                   This metric accounts for operational costs including wages and energy consumption.
                   Positive values indicate sustainable operations.
-                </div>
-              )}
-              {kpi.label === "CO₂ Saved" && (
-                <div className="mt-2 text-xs text-gray-500">
-                  Calculated based on eco-friendly vehicle usage vs traditional delivery methods.
-                  Higher values indicate better environmental impact.
                 </div>
               )}
             </TooltipContent>
