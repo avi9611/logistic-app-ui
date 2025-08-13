@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import ChartsPanel from "@/components/greencart/ChartsPanel";
+import { useEffect } from "react";
 
 interface KPIResult {
   totalProfit: number;

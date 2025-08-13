@@ -47,12 +47,32 @@ const Index = () => {
 
   const [simulationHistory, setSimulationHistory] = useState<
     Array<{
+      id: string;
       timestamp: string;
       config: SimConfig;
       kpis: typeof kpis;
       totals: typeof totals;
     }>
   >([]);
+
+  // Delete simulation history entry
+  const handleDeleteHistory = async (id: string) => {
+    if (!userId) return;
+    if (!window.confirm("Delete this simulation history entry?")) return;
+    try {
+      const res = await fetch(
+        `${API_BASE}/simulation-history/${id}`,
+        { method: "DELETE" }
+      );
+      if (!res.ok) throw new Error("Failed to delete entry");
+      setSimulationHistory((prev) =>
+        prev.filter((entry) => entry.id !== id)
+      );
+    } catch (err) {
+      console.error("Delete simulation history error:", err);
+      // Optionally show error to user
+    }
+  };
 
   // Decode userId from JWT token
   function getUserIdFromToken() {
@@ -76,7 +96,18 @@ const Index = () => {
     fetch(`${API_BASE}/simulation-history?userId=${userId}`)
       .then(res => res.json())
       .then(data => {
-        if (Array.isArray(data)) setSimulationHistory(data);
+        if (Array.isArray(data)) {
+          // Ensure each entry has an id
+          setSimulationHistory(
+            data.map((entry: any) => ({
+              id: entry.id,
+              timestamp: entry.timestamp,
+              config: entry.config,
+              kpis: entry.kpis,
+              totals: entry.totals,
+            }))
+          );
+        }
       });
   }, [userId]);
 
@@ -213,14 +244,31 @@ const Index = () => {
           return res.json();
         })
         .then(saved => {
-          setSimulationHistory(prev => [saved, ...prev]);
+          // Ensure saved entry has id
+          setSimulationHistory(prev => [
+            {
+              id: saved.id,
+              timestamp: saved.timestamp,
+              config: saved.config,
+              kpis: saved.kpis,
+              totals: saved.totals,
+            },
+            ...prev,
+          ]);
         })
         .catch(err => {
           // Optionally show error to user
           console.error("Simulation history save error:", err);
         });
     } else {
-      setSimulationHistory(prev => [entry, ...prev]);
+      // For local-only, generate a random id
+      setSimulationHistory(prev => [
+        {
+          id: Math.random().toString(36).slice(2),
+          ...entry,
+        },
+        ...prev,
+      ]);
     }
     // Removed scenario save logic
   }, [config, kpis, totals, userId]);
@@ -374,7 +422,7 @@ const Index = () => {
           <div className="space-y-8">
             {simulationHistory.map((entry, idx) => (
               <div
-                key={idx}
+                key={entry.id}
                 className="bg-white rounded-xl shadow p-6 border border-green-100"
               >
                 <div className="flex justify-between items-center mb-4">
@@ -384,6 +432,13 @@ const Index = () => {
                   <span className="text-xs text-muted-foreground">
                     {entry.timestamp}
                   </span>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleDeleteHistory(entry.id)}
+                  >
+                    Delete
+                  </Button>
                 </div>
                 <div className="mb-4">
                   <span className="font-semibold text-green-800 block mb-2">
